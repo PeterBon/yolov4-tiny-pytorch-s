@@ -109,8 +109,17 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
     print('Total Loss: %.4f || Val Loss: %.4f ' % (total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
 
     print('Saving state, iter:', str(epoch + 1))
-    torch.save(model.state_dict(), 'logs/Epoch%d-Total_Loss%.4f-Val_Loss%.4f.pth' % (
-        (epoch + 1), total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
+    # log.yaml
+    avg_train_loss = total_loss / (epoch_size + 1)
+    avg_val_loss = val_loss / (epoch_size_val + 1)
+    log['epoch_number'] += 1
+    log['Epoch' + str(epoch + 1)] = [avg_train_loss, avg_val_loss]
+    if log['best_val_loss']<0 or avg_val_loss<log['best_val_loss']:
+        log['best_val_loss'] = avg_val_loss
+        torch.save(model.state_dict(), 'logs/best.pth')
+    with open('logs/log.yaml', 'w', encoding='utf-8') as f:
+        yaml.dump(log, f)
+
     torch.save(model.state_dict(), 'logs/last.pth')
 
 
@@ -119,8 +128,17 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
 #   https://www.bilibili.com/video/BV1zE411u7Vw
 # ----------------------------------------------------#
 if __name__ == "__main__":
+    # hyp
     with open('model_data/hyp.finetune.yaml', encoding='utf-8') as f:
         hyp = yaml.load(f, Loader=yaml.FullLoader)
+
+    # log
+    if os.path.exists('logs/log.yaml'):
+        with open('logs/log.yaml', encoding='utf-8') as f:
+            log = yaml.load(f, Loader=yaml.FullLoader)
+    else:
+        log = {'epoch_number': 0, 'best_val_loss': -1}
+
     #   输入的shape大小
     input_shape = hyp.get('input_shape')
 
