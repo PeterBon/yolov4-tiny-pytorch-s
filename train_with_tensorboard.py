@@ -149,7 +149,7 @@ if __name__ == "__main__":
     
     # 创建模型
     model = YoloBody(len(anchors[0]),num_classes)
-    model_path = "model_data/yolov4_tiny_weights_coco.pth"
+    model_path = "logs/last.pth"
     # 加快模型训练的效率
     print('Loading weights into state dict...')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
