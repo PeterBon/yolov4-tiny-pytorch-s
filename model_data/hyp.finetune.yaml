@@ -3,7 +3,7 @@ input_shape: [1024,1024] # 训练的输入图像大小
 annotation_path: tt100k_train.txt # 训练文件路径
 anchors_path: model_data/yolo_anchors.txt # anchor文件路径
 classes_path: model_data/tt100k_classes.txt # classes文件路径
-model_path: logs/last.pth # 预训练文件路径
+model_path: 1 # 预训练文件路径
 val_split: 0.1 # 用于验证集的比例
 
 # 训练参数
