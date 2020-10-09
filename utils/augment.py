@@ -2,7 +2,7 @@ import random
 import cv2
 import numpy as np
 import math
-import skimage
+# import skimage
 
 CLASS_BEFORE2AFTER = 0
 CLASS_AFTER2BEFORE = 1
@@ -235,11 +235,11 @@ def random_blur(img, kernel):
     return img
 
 
-def random_noise(img, prob=0.5, mode='gaussian', mean=0, var=0.01):
-    if random.random() < prob:
-        img = skimage.util.random_noise(img, mode=mode, mean=mean, var=var)*255
-        img = img.astype('uint8')
-    return img
+# def random_noise(img, prob=0.5, mode='gaussian', mean=0, var=0.01):
+#     if random.random() < prob:
+#         img = skimage.util.random_noise(img, mode=mode, mean=mean, var=var)*255
+#         img = img.astype('uint8')
+#     return img
 
 
 

@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from torchvision.ops import nms
 
 class DecodeBox(nn.Module):

@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import math
 import torch.nn.functional as F
-from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
+# from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
 from PIL import Image
 from utils.utils import bbox_iou, merge_bboxes
 
