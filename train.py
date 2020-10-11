@@ -17,6 +17,7 @@ from nets.yolo4_tiny import YoloBody
 from tqdm import tqdm
 import yaml
 import math
+from tensorboardX import SummaryWriter
 
 
 def init_weights(model):
@@ -87,8 +88,11 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
                                 'lr': get_lr(optimizer),
                                 's/step': waste_time})
             pbar.update(1)
+            writer.add_scalar('Train_loss_batch', loss, (epoch*epoch_size + iteration))
 
             start_time = time.time()
+
+    writer.add_scalar('Train_loss_epoch', total_loss / (iteration + 1), epoch)
 
     print('Start Validation')
     with tqdm(total=epoch_size_val, desc=f'Epoch {epoch + 1}/{Epoch}', postfix=dict, mininterval=0.3) as pbar:
@@ -112,9 +116,13 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
                     losses.append(loss_item[0])
                 loss = sum(losses)
                 val_loss += loss
+
+                writer.add_scalar('Val_loss_batch', loss, (epoch * epoch_size_val + iteration))
+
             pbar.set_postfix(**{'total_loss': val_loss.item() / (iteration + 1)})
             pbar.update(1)
 
+    writer.add_scalar('Val_loss_epoch',val_loss/(epoch_size_val+1), epoch)
     print('Finish Validation')
     print('Epoch:' + str(epoch + 1) + '/' + str(Epoch))
     print('Total Loss: %.4f || Val Loss: %.4f ' % (total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
@@ -200,6 +208,15 @@ if __name__ == "__main__":
     np.random.seed(None)
     num_val = int(len(lines) * val_split)
     num_train = len(lines) - num_val
+
+    # tensorboardX
+    writer = SummaryWriter(log_dir='logs', flush_secs=60)
+    if Cuda:
+        graph_inputs = torch.from_numpy(np.random.rand(1, 3, input_shape[0], input_shape[1])).type(
+            torch.FloatTensor).cuda()
+    else:
+        graph_inputs = torch.from_numpy(np.random.rand(1, 3, input_shape[0], input_shape[1])).type(torch.FloatTensor)
+    writer.add_graph(model, (graph_inputs,))
 
     Batch_size = hyp.get('batch_size')
     start_epoch = hyp.get('start_epoch')
