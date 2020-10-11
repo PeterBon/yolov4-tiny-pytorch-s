@@ -123,7 +123,7 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
             pbar.set_postfix(**{'total_loss': val_loss.item() / (iteration + 1)})
             pbar.update(1)
 
-
+    # tensorboardX
     writer.add_scalars('loss',{'train':total_loss / (epoch_size + 1),'val':val_loss / (epoch_size_val + 1)},epoch)
     writer.flush()
 
