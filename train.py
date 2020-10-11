@@ -31,6 +31,7 @@ def init_weights(model):
             m.bias.data.zero_()
     return model
 
+
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
@@ -88,11 +89,11 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
                                 'lr': get_lr(optimizer),
                                 's/step': waste_time})
             pbar.update(1)
-            writer.add_scalar('Train_loss_batch', loss, (epoch*epoch_size + iteration))
+            # train_writer.add_scalar('loss_batch', loss, (epoch * epoch_size + iteration))
 
             start_time = time.time()
 
-    writer.add_scalar('Train_loss_epoch', total_loss / (iteration + 1), epoch)
+
 
     print('Start Validation')
     with tqdm(total=epoch_size_val, desc=f'Epoch {epoch + 1}/{Epoch}', postfix=dict, mininterval=0.3) as pbar:
@@ -117,12 +118,14 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
                 loss = sum(losses)
                 val_loss += loss
 
-                writer.add_scalar('Val_loss_batch', loss, (epoch * epoch_size_val + iteration))
+                # val_writer.add_scalar('loss_batch', loss, (epoch * epoch_size_val + iteration))
 
             pbar.set_postfix(**{'total_loss': val_loss.item() / (iteration + 1)})
             pbar.update(1)
 
-    writer.add_scalar('Val_loss_epoch',val_loss/(epoch_size_val+1), epoch)
+
+    writer.add_scalars('loss',{'train':total_loss / (epoch_size + 1),'val':val_loss / (epoch_size_val + 1)},epoch)
+    writer.flush()
     print('Finish Validation')
     print('Epoch:' + str(epoch + 1) + '/' + str(Epoch))
     print('Total Loss: %.4f || Val Loss: %.4f ' % (total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
@@ -134,8 +137,8 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
     avg_val_loss = val_loss / (epoch_size_val + 1)
     avg_val_loss = avg_val_loss.item()
     log['epoch_number'] += 1
-    log['Epoch%03d' % (epoch+1)] = [avg_train_loss, avg_val_loss]
-    if log['best_val_loss']<0 or avg_val_loss<log['best_val_loss']:
+    log['Epoch%03d' % (epoch + 1)] = [avg_train_loss, avg_val_loss]
+    if log['best_val_loss'] < 0 or avg_val_loss < log['best_val_loss']:
         log['best_val_loss'] = avg_val_loss
         torch.save(model.state_dict(), 'logs/best.pth')
     with open('logs/log.yaml', 'w', encoding='utf-8') as f:
@@ -210,7 +213,8 @@ if __name__ == "__main__":
     num_train = len(lines) - num_val
 
     # tensorboardX
-    writer = SummaryWriter(log_dir='logs', flush_secs=60)
+    writer = SummaryWriter(logdir='logs')
+
     if Cuda:
         graph_inputs = torch.from_numpy(np.random.rand(1, 3, input_shape[0], input_shape[1])).type(
             torch.FloatTensor).cuda()
