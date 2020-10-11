@@ -126,6 +126,7 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
 
     writer.add_scalars('loss',{'train':total_loss / (epoch_size + 1),'val':val_loss / (epoch_size_val + 1)},epoch)
     writer.flush()
+
     print('Finish Validation')
     print('Epoch:' + str(epoch + 1) + '/' + str(Epoch))
     print('Total Loss: %.4f || Val Loss: %.4f ' % (total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
@@ -255,3 +256,5 @@ if __name__ == "__main__":
     for epoch in range(start_epoch, end_epoch):
         fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, gen_val, end_epoch, Cuda)
         lr_scheduler.step()
+
+    writer.close()
