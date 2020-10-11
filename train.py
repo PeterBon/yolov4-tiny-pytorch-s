@@ -19,6 +19,17 @@ import yaml
 import math
 
 
+def init_weights(model):
+    # 进行权值初始化
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d):
+            n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+            m.weight.data.normal_(0, math.sqrt(2. / n))
+        elif isinstance(m, nn.BatchNorm2d):
+            m.weight.data.fill_(1)
+            m.bias.data.zero_()
+    return model
+
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
@@ -111,9 +122,11 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
     print('Saving state, iter:', str(epoch + 1))
     # log.yaml
     avg_train_loss = total_loss / (epoch_size + 1)
+    avg_train_loss = avg_train_loss.item()
     avg_val_loss = val_loss / (epoch_size_val + 1)
+    avg_val_loss = avg_val_loss.item()
     log['epoch_number'] += 1
-    log['Epoch' + str(epoch + 1)] = [avg_train_loss, avg_val_loss]
+    log['Epoch%03d' % (epoch+1)] = [avg_train_loss, avg_val_loss]
     if log['best_val_loss']<0 or avg_val_loss<log['best_val_loss']:
         log['best_val_loss'] = avg_val_loss
         torch.save(model.state_dict(), 'logs/best.pth')
@@ -150,15 +163,19 @@ if __name__ == "__main__":
     model = YoloBody(len(anchors[0]), num_classes)
 
     model_path = hyp.get('model_path')
-    # 加快模型训练的效率
-    print('Loading weights into state dict...')
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model_dict = model.state_dict()
-    pretrained_dict = torch.load(model_path, map_location=device)
-    pretrained_dict = {k: v for k, v in pretrained_dict.items() if np.shape(model_dict[k]) == np.shape(v)}
-    model_dict.update(pretrained_dict)
-    model.load_state_dict(model_dict)
-    print('Finished!')
+
+    if model_path:
+        # 加快模型训练的效率
+        print('Loading weights into state dict...')
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model_dict = model.state_dict()
+        pretrained_dict = torch.load(model_path, map_location=device)
+        pretrained_dict = {k: v for k, v in pretrained_dict.items() if np.shape(model_dict[k]) == np.shape(v)}
+        model_dict.update(pretrained_dict)
+        model.load_state_dict(model_dict)
+        print('Finished!')
+    else:
+        init_weights(model)
 
     net = model.train()
 
