@@ -64,12 +64,12 @@ class CSPDarkNet(nn.Module):
     def __init__(self):
         super(CSPDarkNet, self).__init__()
         self.conv1 = BasicConv(3, 32, kernel_size=3, stride=2)
-        self.conv2 = BasicConv(32, 64, kernel_size=3, stride=2)
+        self.resblock_body1 = Resblock_body(32, 32)
 
-        self.resblock_body1 = Resblock_body(64, 64)
-        self.resblock_body2 = Resblock_body(128, 128)
-        self.resblock_body3 = Resblock_body(256, 256)
-        self.conv3 = BasicConv(512, 512, kernel_size=3)
+        self.resblock_body2 = Resblock_body(64, 64)
+        self.resblock_body3 = Resblock_body(128, 128)
+
+        self.conv2 = BasicConv(256, 256, kernel_size=3)
 
         self.num_features = 1
         # 进行权值初始化
@@ -90,6 +90,7 @@ class CSPDarkNet(nn.Module):
         x = self.conv3(x)  # 26->26
         feat2 = x
         return feat1, feat2  # 52,26
+
 
 
 def darknet53_tiny(pretrained, **kwargs):
