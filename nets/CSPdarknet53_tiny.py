@@ -5,6 +5,31 @@ import math
 from collections import OrderedDict
 from nets.attention_layers import SEModule, CBAM
 
+class DepthwiseSeparableConv(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1):
+        super(DepthwiseSeparableConv, self).__init__()
+        self.depth_conv = nn.Conv2d(
+            in_channels=in_channels,
+            out_channels=in_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=kernel_size//2,
+            groups=in_channels
+        )
+        self.point_conv = nn.Conv2d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            groups=1
+        )
+
+    def forward(self, x):
+        x = self.depth_conv(x)
+        x = self.point_conv(x)
+        return x
+
 
 # -------------------------------------------------#
 #   卷积块
