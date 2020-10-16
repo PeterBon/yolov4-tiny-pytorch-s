@@ -122,7 +122,7 @@ class YOLOLoss(nn.Module):
         self.num_classes = num_classes
         self.bbox_attrs = 5 + num_classes
         self.img_size = img_size
-        self.feature_length = [img_size[0] // 16, img_size[0] // 8]
+        self.feature_length = [img_size[0] // 32, img_size[0] // 16]
         self.label_smooth = label_smooth
 
         self.ignore_threshold = 0.5

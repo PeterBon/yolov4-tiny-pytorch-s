@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import math
 from collections import OrderedDict
+from nets.attention_layers import SEModule, CBAM
 
 
 # -------------------------------------------------#
@@ -38,8 +39,10 @@ class Resblock_body(nn.Module):
 
         self.conv2 = BasicConv(out_channels // 2, out_channels // 2, 3)
         self.conv3 = BasicConv(out_channels // 2, out_channels // 2, 3)
+        self.attention1 = SEModule(out_channels // 2)
 
         self.conv4 = BasicConv(out_channels, out_channels, 1)
+        self.attention2 = SEModule(out_channels)
         self.maxpool = nn.MaxPool2d([2, 2], [2, 2])
 
     def forward(self, x):
@@ -51,10 +54,12 @@ class Resblock_body(nn.Module):
         x = self.conv2(x)
         route1 = x
         x = self.conv3(x)
+        x = self.attention1(x)
         x = torch.cat([x, route1], dim=1)
         x = self.conv4(x)
         feat = x
 
+        x = self.attention2(x)
         x = torch.cat([route, x], dim=1)
         x = self.maxpool(x)
         return x, feat

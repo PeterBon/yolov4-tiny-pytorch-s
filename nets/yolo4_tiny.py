@@ -60,20 +60,21 @@ class YoloBody(nn.Module):
         #  backbone
         self.backbone = darknet53_tiny(None)
 
-        self.conv_for_P4 = BasicConv(256, 128, 1)
-        self.yolo_headP4 = yolo_head([256, num_anchors * (5 + num_classes)], 128)
+        self.conv_for_P5 = BasicConv(512, 256, 1)
+        self.yolo_headP5 = yolo_head([512, num_anchors * (5 + num_classes)], 256)
 
-        self.upsample = Upsample(128, 64)
-        self.yolo_headP3 = yolo_head([128, num_anchors * (5 + num_classes)], 192)
+        self.upsample = Upsample(256, 128)
+        self.yolo_headP4 = yolo_head([256, num_anchors * (5 + num_classes)], 384)
 
     def forward(self, x):
         #  backbone
-        feat1, feat2 = self.backbone(x)  # 52,26 128 256
-        P4 = self.conv_for_P4(feat2)  # 256-128
-        out0 = self.yolo_headP4(P4)
+        feat1, feat2 = self.backbone(x)
+        P5 = self.conv_for_P5(feat2)
+        out0 = self.yolo_headP5(P5)
 
-        P4_Upsample = self.upsample(P4)  # 128-64
-        P3 = torch.cat([feat1, P4_Upsample], axis=1)  # 192
-        out1=self.yolo_headP3(P3)
+        P5_Upsample = self.upsample(P5)
+        P4 = torch.cat([feat1, P5_Upsample], axis=1)
+
+        out1 = self.yolo_headP4(P4)
 
         return out0, out1
