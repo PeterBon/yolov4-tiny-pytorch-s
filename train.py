@@ -93,8 +93,6 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
 
             start_time = time.time()
 
-
-
     print('Start Validation')
     with tqdm(total=epoch_size_val, desc=f'Epoch {epoch + 1}/{Epoch}', postfix=dict, mininterval=0.3) as pbar:
         for iteration, batch in enumerate(genval):
@@ -124,8 +122,8 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
             pbar.update(1)
 
     # tensorboardX
-    writer.add_scalars('loss',{'train':total_loss / (epoch_size + 1),'val':val_loss / (epoch_size_val + 1)},epoch)
-    writer.add_scalar('lr',get_lr(optimizer),epoch)
+    writer.add_scalars('loss', {'train': total_loss / (epoch_size + 1), 'val': val_loss / (epoch_size_val + 1)}, epoch)
+    writer.add_scalar('lr', get_lr(optimizer), epoch)
     writer.flush()
 
     print('Finish Validation')
@@ -229,14 +227,14 @@ if __name__ == "__main__":
     end_epoch = hyp.get('end_epoch')
     optimizer = optim.Adam([{'params': net.parameters(), 'initial_lr': hyp.get('lr')}], lr=hyp.get('lr'),
                            weight_decay=hyp.get('weight_decay'))
-    if hyp.get('cosine_lr'):
-        lf = lambda x: ((1 + math.cos(x * math.pi / hyp.get('epochs'))) / 2) * (1 - hyp['lrf']) + hyp['lrf']  # cosine
-        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
-        # lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5,last_epoch=start_epoch - 1)
-    else:
+    if hyp.get('lr_scheduler') == 'cosine':
+        # lf = lambda x: ((1 + math.cos(x * math.pi / hyp.get('epochs'))) / 2) * (1 - hyp['lrf']) + hyp['lrf']  # cosine
+        # lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
+        lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5,last_epoch=start_epoch - 1)
+    elif hyp.get('lr_scheduler') == 'gamma':
         # lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95, last_epoch=start_epoch - 1)
-        lambda1 = lambda epoch: 0.95 ** epoch
-        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1, last_epoch=start_epoch - 1)
+        func = lambda epoch: hyp.get('gamma') ** epoch
+        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=func, last_epoch=start_epoch - 1)
 
     train_dataset = YoloDataset(lines[:num_train], (input_shape[0], input_shape[1]), hyp=hyp)
     val_dataset = YoloDataset(lines[num_train:], (input_shape[0], input_shape[1]), hyp=hyp)
