@@ -214,7 +214,6 @@ if __name__ == "__main__":
 
     # tensorboardX
     writer = SummaryWriter(logdir='logs')
-
     if Cuda:
         graph_inputs = torch.from_numpy(np.random.rand(1, 3, input_shape[0], input_shape[1])).type(
             torch.FloatTensor).cuda()
@@ -231,7 +230,7 @@ if __name__ == "__main__":
         # lf = lambda x: ((1 + math.cos(x * math.pi / hyp.get('epochs'))) / 2) * (1 - hyp['lrf']) + hyp['lrf']  # cosine
         # lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
         lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5,last_epoch=start_epoch - 1)
-    elif hyp.get('lr_scheduler') == 'gamma':
+    else:
         # lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95, last_epoch=start_epoch - 1)
         func = lambda epoch: hyp.get('gamma') ** epoch
         lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=func, last_epoch=start_epoch - 1)
