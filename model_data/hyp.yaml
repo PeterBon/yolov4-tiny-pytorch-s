@@ -17,7 +17,7 @@ lrf: 0.1
 T_max: 5
 eta_min: 0.00001 # cosine学习率系数的最小值
 
-weight_decay: 0.00036 # Adam优化器中的权重衰减参数
+weight_decay: 0.0005 # Adam优化器中的权重衰减参数
 batch_size: 6 # 批大小
 smoooth_label: 0
 
