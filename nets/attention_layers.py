@@ -32,6 +32,7 @@ class BasicConv(nn.Module):
         self.bn = nn.BatchNorm2d(out_planes, eps=1e-5, momentum=0.01, affine=True)if bn else None
         self.relu = nn.ReLU() if relu else None
 
+
     def forward(self, x):
         x = self.conv(x)
         if self.bn is not None:
@@ -79,7 +80,7 @@ class ChannelGate(nn.Module):
                 channel_att_sum = channel_att_raw
             else:
                 channel_att_sum = channel_att_sum + channel_att_raw
-        scale = F.sigmoid(channel_att_sum).unsqueeze(2).unsqueeze(3).expand_as(x)
+        scale = torch.sigmoid(channel_att_sum).unsqueeze(2).unsqueeze(3).expand_as(x)
         return x * scale
 
 
@@ -105,7 +106,7 @@ class SpatialGate(nn.Module):
     def forward(self, x):
         x_compress = self.compress(x)
         x_out = self.spatial(x_compress)
-        scale = F.sigmoid(x_out)
+        scale = torch.sigmoid(x_out)
         return x * scale
 
 

@@ -64,7 +64,7 @@ class Resblock_body(nn.Module):
 
         self.conv2 = BasicConv(out_channels // 2, out_channels // 2, 3)
         self.conv3 = BasicConv(out_channels // 2, out_channels // 2, 3)
-        self.attention1 = CBAM(out_channels // 2)
+
 
         self.conv4 = BasicConv(out_channels, out_channels, 1)
         self.attention2 = CBAM(out_channels)
@@ -79,7 +79,7 @@ class Resblock_body(nn.Module):
         x = self.conv2(x)
         route1 = x
         x = self.conv3(x)
-        x = self.attention1(x)
+
         x = torch.cat([x, route1], dim=1)
         x = self.conv4(x)
         feat = x
@@ -94,12 +94,12 @@ class CSPDarkNet(nn.Module):
     def __init__(self):
         super(CSPDarkNet, self).__init__()
         self.conv1 = BasicConv(3, 32, kernel_size=3, stride=2)
-        self.resblock_body1 = Resblock_body(32, 32)
+        self.conv2 = BasicConv(32, 64, kernel_size=3, stride=2)
 
-        self.resblock_body2 = Resblock_body(64, 64)
-        self.resblock_body3 = Resblock_body(128, 128)
-
-        self.conv2 = BasicConv(256, 256, kernel_size=3)
+        self.resblock_body1 = Resblock_body(64, 64)
+        self.resblock_body2 = Resblock_body(128, 128)
+        self.resblock_body3 = Resblock_body(256, 256)
+        self.conv3 = BasicConv(512, 512, kernel_size=3)
 
         self.num_features = 1
         # 进行权值初始化
@@ -112,15 +112,14 @@ class CSPDarkNet(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        x = self.conv1(x)  # 416->208
-        x = self.conv2(x)  # 208->104
-        x, _ = self.resblock_body1(x)  # 104->52,104
-        x, feat1 = self.resblock_body2(x)  # 52->26,52
-        # x, feat1 = self.resblock_body3(x)  # 26->13,26
-        x = self.conv3(x)  # 26->26
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x, _ = self.resblock_body1(x)
+        x, _ = self.resblock_body2(x)
+        x, feat1 = self.resblock_body3(x)
+        x = self.conv3(x)
         feat2 = x
-        return feat1, feat2  # 52,26
-
+        return feat1, feat2
 
 
 def darknet53_tiny(pretrained, **kwargs):
